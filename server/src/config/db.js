@@ -1,24 +1,18 @@
-const { Pool } = require('pg');
-const dotenv = require('dotenv');
+const { PrismaClient } = require('@prisma/client');
 
-dotenv.config();
-
-const pool = new Pool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  database: process.env.DB_NAME,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-});
+const prisma = new PrismaClient();
 
 // Test the connection
-pool.connect((err, client, release) => {
-  if (err) {
-    console.error('❌ Database connection failed:', err.message);
-  } else {
+async function connectDB() {
+  try {
+    await prisma.$connect();
     console.log('✅ Database connected successfully!');
-    release();
+  } catch (err) {
+    console.error('❌ Database connection failed:', err.message);
+    process.exit(1);
   }
-});
+}
 
-module.exports = pool;
+connectDB();
+
+module.exports = prisma;
