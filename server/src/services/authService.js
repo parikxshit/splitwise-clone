@@ -1,7 +1,8 @@
 const prisma = require('../config/db');
-const { ERROR_MESSAGES } = require('../constants');
 const { hashPassword } = require('../utils/password');
 const { BadRequestError } = require('../utils/errors');
+const { ERROR_MESSAGES } = require('../constants');
+const logger = require('../utils/logger');
 
 const register = async ({ name, email, password }) => {
 
@@ -22,6 +23,8 @@ const register = async ({ name, email, password }) => {
       password: hashedPassword,
     },
   });
+
+  logger.info(`New user registered: ${newUser.email}`);
 
   return {
     id: newUser.id,
