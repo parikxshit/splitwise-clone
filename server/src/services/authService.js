@@ -1,5 +1,7 @@
 const prisma = require('../config/db');
+const { ERROR_MESSAGES } = require('../constants');
 const { hashPassword } = require('../utils/password');
+const { BadRequestError } = require('../utils/errors');
 
 const register = async ({ name, email, password }) => {
 
@@ -8,9 +10,7 @@ const register = async ({ name, email, password }) => {
   });
 
   if (existingUser) {
-    const error = new Error('User with this email already exists');
-    error.statusCode = 400;
-    throw error;
+    throw new BadRequestError(ERROR_MESSAGES.USER_ALREADY_EXISTS);
   }
 
   const hashedPassword = await hashPassword(password);
