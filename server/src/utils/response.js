@@ -6,11 +6,12 @@ const sendSuccess = (res, statusCode, message, data = null) => {
   });
 };
 
-const sendError = (res, statusCode, message) => {
+const sendError = (res, statusCode, message, errors = null) => {
   return res.status(statusCode).json({
     success: false,
     message,
     data: null,
+    errors,
   });
 };
 

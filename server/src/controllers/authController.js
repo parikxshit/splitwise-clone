@@ -5,11 +5,6 @@ const { HTTP_STATUS, ERROR_MESSAGES } = require('../constants');
 exports.register = async (req, res) => {
   const { name, email, password } = req.body;
 
-  // 1. Validate input
-  if (!name || !email || !password) {
-    return sendError(res, HTTP_STATUS.BAD_REQUEST, ERROR_MESSAGES.MISSING_REQUIRED_FIELDS);
-  }
-
   try {
     // 2. Call service
     const user = await authService.register({ name, email, password });
