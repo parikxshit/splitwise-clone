@@ -6,6 +6,13 @@ class AppError extends Error {
   }
 }
 
+class ValidationError extends AppError {
+  constructor(errors) {
+    super('Validation failed', 400);
+    this.errors = errors;
+  }
+}
+
 class BadRequestError extends AppError {
   constructor(message) {
     super(message, 400);
@@ -36,11 +43,27 @@ class InternalError extends AppError {
   }
 }
 
+const handlePrismaError = (error) => {
+  if (error.code === 'P2002') {
+    const field = error.meta?.target?.[0] || 'field';
+    return new BadRequestError(`${field} already exists`);
+  }
+  if (error.code === 'P2025') {
+    return new NotFoundError('Record not found');
+  }
+  if (error.code === 'P2003') {
+    return new BadRequestError('Related record not found');
+  }
+  return new InternalError('Database error occurred');
+};
+
 module.exports = {
   AppError,
+  ValidationError,
   BadRequestError,
   UnauthorizedError,
   ForbiddenError,
   NotFoundError,
   InternalError,
+  handlePrismaError,
 };

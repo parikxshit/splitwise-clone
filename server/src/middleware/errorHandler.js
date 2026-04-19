@@ -1,26 +1,43 @@
-const { AppError } = require('../utils/errors');
+const { AppError, handlePrismaError } = require('../utils/errors');
 const { sendError } = require('../utils/response');
-const { HTTP_STATUS, ERROR_MESSAGES } = require('../constants');
+const { ERROR_MESSAGES } = require('../constants');
 const logger = require('../utils/logger');
 
 const errorHandler = (err, req, res, next) => {
+  logger.error(`${err.name}: ${err.message}`);
 
-  // Log the error using winston
-  logger.error(`${err.message}`);
-
-  // Show stack trace only in development
   if (process.env.NODE_ENV !== 'production') {
     logger.debug(err.stack);
   }
 
+  // ValidationError → already has errors array
+  // BadRequestError, NotFoundError etc → wrap in array
   if (err instanceof AppError) {
-    return sendError(res, err.statusCode, err.message);
+    return sendError(
+      res,
+      err.statusCode,
+      err.message,
+      err.errors || [{ message: err.message }]  // ← always array
+    );
   }
 
+  // Prisma errors
+  if (err.code?.startsWith('P')) {
+    const prismaError = handlePrismaError(err);
+    return sendError(
+      res,
+      prismaError.statusCode,
+      prismaError.message,
+      [{ message: prismaError.message }]  // ← always array
+    );
+  }
+
+  // Unknown errors
   return sendError(
     res,
-    HTTP_STATUS.INTERNAL_SERVER_ERROR,
-    ERROR_MESSAGES.GENERIC_SERVER_ERROR
+    500,
+    ERROR_MESSAGES.GENERIC_SERVER_ERROR,
+    [{ message: ERROR_MESSAGES.GENERIC_SERVER_ERROR }]  // ← always array
   );
 };
 

@@ -5,7 +5,6 @@ const { ERROR_MESSAGES } = require('../constants');
 const logger = require('../utils/logger');
 
 const register = async ({ name, email, password }) => {
-
   const existingUser = await prisma.user.findUnique({
     where: { email },
   });
@@ -17,11 +16,7 @@ const register = async ({ name, email, password }) => {
   const hashedPassword = await hashPassword(password);
 
   const newUser = await prisma.user.create({
-    data: {
-      name,
-      email,
-      password: hashedPassword,
-    },
+    data: { name, email, password: hashedPassword },
   });
 
   logger.info(`New user registered: ${newUser.email}`);
