@@ -12,6 +12,18 @@ const registerSchema = z.object({
     .max(100, 'Password cannot exceed 100 characters'),
 });
 
+const loginSchema = z.object({
+  email: z.string()
+    .email('Please provide a valid email address'),
+  password: z.string()
+    .min(1, 'Password is required'),
+});
+
+const refreshSchema = z.object({
+  refreshToken: z.string()
+    .min(1, 'Refresh token is required'),
+});
+
 const validate = (schema) => {
   return (req, res, next) => {
     const result = schema.safeParse(req.body);
@@ -29,4 +41,9 @@ const validate = (schema) => {
   };
 };
 
-module.exports = { registerSchema, validate };
+module.exports = { 
+  registerSchema,
+  loginSchema,
+  refreshSchema,
+  validate
+};
