@@ -1,11 +1,13 @@
 const jwt = require('jsonwebtoken');
+const logger = require('./logger');
 
 const generateAccessToken = (userId) => {
   return jwt.sign({ userId }, process.env.JWT_ACCESS_SECRET, { expiresIn: '15m' });
 };
 
 const generateRefreshToken = (userId) => {
-  return jwt.sign({ userId}, process.env.JWT_REFERESH_SECRET, { expiresIn: '7d'});
+  console.log(process.env.JWT_REFRESH_SECRET)
+  return jwt.sign({ userId }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
 }
 
 const verifyAccessToken = (token) => {
@@ -13,9 +15,10 @@ const verifyAccessToken = (token) => {
 };
 
 const verifyRefreshToken = (token) => {
-  return jwt.verify(token, process.env.JWT_REFERESH_SECRET)
+  logger.info(process.env.JWT_REFRESH_SECRET, "refresh secret")
+  return jwt.verify(token, process.env.JWT_REFRESH_SECRET)
 };
-module.exports = { 
+module.exports = {
   generateRefreshToken,
   verifyRefreshToken,
   generateAccessToken,

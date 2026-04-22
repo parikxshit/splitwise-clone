@@ -4,7 +4,6 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const prisma = require('./src/config/db');
 const logger = require('./src/utils/logger');
 const errorHandler = require('./src/middleware/errorHandler');
 const apiRoutes = require('./src/routes');

@@ -9,10 +9,10 @@ const errorHandler = (err, req, res, next) => {
     if (err instanceof AppError) {
         logger.warn(`${err.name}: ${err.message}`);
         return sendError(
-        res,
-        err.statusCode,
-        err.message,
-        err.errors || [{ message: err.message }]
+            res,
+            err.statusCode,
+            err.message,
+            err.errors || [{ message: err.message }]
         );
     }
 
@@ -32,10 +32,10 @@ const errorHandler = (err, req, res, next) => {
         const prismaError = handlePrismaError(err);
         logger.warn(`PrismaError ${err.code}: ${err.message}`);
         return sendError(
-        res,
-        prismaError.statusCode,
-        prismaError.message,
-        [{ message: prismaError.message }]
+            res,
+            prismaError.statusCode,
+            prismaError.message,
+            [{ message: prismaError.message }]
         );
     }
 

@@ -14,8 +14,13 @@ exports.login = async (req, res) => {
   return sendSuccess(res, HTTP_STATUS.OK, SUCCESS_MESSAGES.LOGIN_SUCCESSFUL, result);
 };
 
-exports.refresh = (req, res) => {
+exports.refresh = async (req, res) => {
   const { refreshToken } = req.body;
-  const data = authService.refresh({ refreshToken });
+  const data = await authService.refresh({ refreshToken });
   return sendSuccess(res, HTTP_STATUS.OK, SUCCESS_MESSAGES.TOKEN_REFRESHED, data);
 };
+
+exports.logout = async (req, res) => {
+  await authService.logout(req.user.userId);
+  return sendSuccess(res, HTTP_STATUS.OK, SUCCESS_MESSAGES.LOGOUT_SUCCESSFUL, null);
+}
