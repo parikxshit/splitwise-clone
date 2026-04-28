@@ -1,11 +1,11 @@
-const { verifyAccessToken   } = require('../utils/jwt');
+const { verifyAccessToken } = require('../utils/jwt');
 const { UnauthorizedError } = require('../utils/errors');
 const { ERROR_MESSAGES } = require('../constants');
 
 const protect = (req, res, next) => {
 
     const authHeader = req.headers['authorization'];
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         throw new UnauthorizedError(ERROR_MESSAGES.NO_TOKEN);
     }
@@ -14,10 +14,12 @@ const protect = (req, res, next) => {
 
     const decoded = verifyAccessToken(token);
 
-    req.user = { id: decoded.userId };
+    logger.info(decoded, 'decoded')
+    req.user = { userId: decoded.userId.userId };
 
     next();
 };
 
-module.exports = { protect 
+module.exports = {
+    protect
 };

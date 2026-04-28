@@ -48,8 +48,8 @@ const login = async ({ email, password }) => {
   }
 
   // Generate JWT token
-  const accessToken = generateAccessToken({ userId: user.id });
-  const refreshToken = generateRefreshToken({ userId: user.id });
+  const accessToken = generateAccessToken(user.id);
+  const refreshToken = generateRefreshToken(user.id);
 
   await prisma.user.update({
     where: { id: user.id },
@@ -71,14 +71,12 @@ const login = async ({ email, password }) => {
 };
 
 const refresh = async ({ refreshToken }) => {
-  logger.info(`Refresh token received: ${refreshToken}`)
-  const decoded = verifyRefreshToken(refreshToken);
-
+  const decoded = await verifyRefreshToken(refreshToken);
+  console.log('decoded refresh token', decoded)
+  logger.info(decoded, 'decoded refresh token')
   const user = await prisma.user.findUnique({
     where: { id: decoded.userId },
   });
-
-  logger.info(`User found: ${user.email}`)
 
   if (!user) throw new UnauthorizedError(ERROR_MESSAGES.INVALID_TOKEN);
 

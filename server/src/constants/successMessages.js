@@ -2,8 +2,10 @@ const SUCCESS_MESSAGES = {
   // Auth
   USER_REGISTERED: 'User registered successfully',
   USER_LOGGED_IN: 'Login successful',
+  LOGIN_SUCCESSFUL: 'Login successful',
   TOKEN_REFRESHED: 'Access token refreshed successfully',  // ← ADD
-  USER_LOGGED_OUT: 'Logged out successfully',              
+  USER_LOGGED_OUT: 'Logged out successfully',
+  LOGOUT_SUCCESSFUL: 'Logged out successfully',              
 
   // Groups
   GROUP_CREATED: 'Group created successfully',
