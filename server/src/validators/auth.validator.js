@@ -24,26 +24,8 @@ const refreshSchema = z.object({
     .min(1, 'Refresh token is required'),
 });
 
-const validate = (schema) => {
-  return (req, res, next) => {
-    const result = schema.safeParse(req.body);
-
-    if (!result.success) {
-      const errors = result.error.errors.map((err) => ({
-        field: err.path[0],
-        message: err.message,
-      }));
-      throw new ValidationError(errors); // ← pure throw
-    }
-
-    req.body = result.data;
-    next();
-  };
-};
-
 module.exports = { 
   registerSchema,
   loginSchema,
   refreshSchema,
-  validate
 };

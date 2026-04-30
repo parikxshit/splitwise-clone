@@ -1,12 +1,12 @@
-// ProtectedRoute.tsx
+// PublicRoute.tsx
 import { useSelector } from 'react-redux'
 import { Navigate, Outlet } from 'react-router-dom'
 import type { RootState } from '@/store'
 
-function ProtectedRoute() {
+function PublicRoute() {
     const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
 
-    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />
+    return isAuthenticated ? <Navigate to="/dashboard" replace /> : <Outlet />
 }
 
-export default ProtectedRoute;
+export default PublicRoute

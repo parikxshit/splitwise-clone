@@ -86,11 +86,19 @@ const refresh = async ({ refreshToken }) => {
 
   logger.info(`Access token refreshed for: ${user.email}`);
 
-  return { accessToken };
+  return {
+    accessToken,
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    }
+  };
 
 };
 
 const logout = async (userId) => {
+  logger.info(`User logged out: ${userId}`);
   await prisma.user.update({
     where: { id: userId },
     data: { refreshToken: null }

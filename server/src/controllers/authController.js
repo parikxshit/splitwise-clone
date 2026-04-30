@@ -1,6 +1,7 @@
 const authService = require('../services/authService');
 const { sendSuccess } = require('../utils/response');
 const { HTTP_STATUS, SUCCESS_MESSAGES } = require('../constants');
+const logger = require('../utils/logger');
 
 exports.register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -21,6 +22,7 @@ exports.refresh = async (req, res) => {
 };
 
 exports.logout = async (req, res) => {
+  logger.info(`User logged out: ${req.user}`);
   await authService.logout(req.user.userId);
   return sendSuccess(res, HTTP_STATUS.OK, SUCCESS_MESSAGES.LOGOUT_SUCCESSFUL, null);
 }
