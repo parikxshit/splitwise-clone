@@ -71,9 +71,8 @@ const login = async ({ email, password }) => {
 };
 
 const refresh = async ({ refreshToken }) => {
-  const decoded = await verifyRefreshToken(refreshToken);
-  console.log('decoded refresh token', decoded)
-  logger.info(decoded, 'decoded refresh token')
+  const decoded = verifyRefreshToken(refreshToken);
+
   const user = await prisma.user.findUnique({
     where: { id: decoded.userId },
   });

@@ -1,10 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Group, GroupState } from '@/types'
+import { Group, GroupState, Expense } from '@/types'
 
 const initialState: GroupState = {
     groups: [],
     selectedGroup: null,
     loading: false,
+    expenses: [],
+    expensesLoading: false,
 }
 
 const groupSlice = createSlice({
@@ -31,6 +33,22 @@ const groupSlice = createSlice({
         clearSelectedGroup: (state) => {
             state.selectedGroup = null
         },
+        setExpenses: (state, action: PayloadAction<Expense[]>) => {
+            state.expenses = action.payload
+            state.expensesLoading = false
+        },
+        addExpense: (state, action: PayloadAction<Expense>) => {
+            state.expenses.unshift(action.payload)
+        },
+        removeExpense: (state, action: PayloadAction<string>) => {
+            state.expenses = state.expenses.filter((e) => e.id !== action.payload)
+        },
+        setExpensesLoading: (state, action: PayloadAction<boolean>) => {
+            state.expensesLoading = action.payload
+        },
+        clearExpenses: (state) => {
+            state.expenses = []
+        },
     },
 })
 
@@ -41,6 +59,11 @@ export const {
     removeGroup,
     setGroupLoading,
     clearSelectedGroup,
+    setExpenses,
+    addExpense,
+    removeExpense,
+    setExpensesLoading,
+    clearExpenses,
 } = groupSlice.actions
 
 export default groupSlice.reducer

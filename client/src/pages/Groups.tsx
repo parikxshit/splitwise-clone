@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { setGroups, setGroupLoading, addGroup } from '@/store/slices/groupSlice'
+import { createGroupSchema, CreateGroupFormData } from '@/validations/group.schema'
 import api from '@/api/axios'
 import type { RootState, AppDispatch } from '@/store'
 import type { Group } from '@/types'
@@ -13,7 +17,8 @@ function Groups() {
     const { groups, loading } = useSelector((state: RootState) => state.group)
 
     const [showCreateModal, setShowCreateModal] = useState<boolean>(false)
-    const [formData, setFormData] = useState({ name: '', description: '' })
+    const [formData, setFormData] = useState<CreateGroupFormData>({ name: '', description: '' })
+    const [fieldErrors, setFieldErrors] = useState<Partial<CreateGroupFormData>>({})
     const [creating, setCreating] = useState<boolean>(false)
     const [serverError, setServerError] = useState<string | null>(null)
 
@@ -33,18 +38,38 @@ function Groups() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
+        setFieldErrors({ ...fieldErrors, [e.target.name]: undefined })
+    }
+
+    const handleCloseModal = () => {
+        setShowCreateModal(false)
+        setFormData({ name: '', description: '' })
+        setFieldErrors({})
+        setServerError(null)
     }
 
     const handleCreateGroup = async (e: React.SyntheticEvent<HTMLFormElement>) => {
         e.preventDefault()
         setServerError(null)
+        setFieldErrors({})
+
+        const result = createGroupSchema.safeParse(formData)
+
+        if (!result.success) {
+            const errors = result.error.flatten().fieldErrors
+            setFieldErrors({
+                name: errors.name?.[0],
+                description: errors.description?.[0],
+            })
+            return
+        }
+
         setCreating(true)
 
         try {
-            const response = await api.post('/groups', formData)
+            const response = await api.post('/groups', result.data)
             dispatch(addGroup(response.data.data))
-            setShowCreateModal(false)
-            setFormData({ name: '', description: '' })
+            handleCloseModal()
         } catch (err: unknown) {
             if (err && typeof err === 'object' && 'response' in err) {
                 const axiosError = err as { response: { data: { message: string } } }
@@ -117,30 +142,37 @@ function Groups() {
 
                         <form onSubmit={handleCreateGroup} className="space-y-4">
                             <div className="space-y-1">
-                                <label className="text-sm font-medium text-gray-700">Group Name</label>
-                                <input
+                                <Label htmlFor="name">Group Name</Label>
+                                <Input
+                                    id="name"
                                     name="name"
                                     type="text"
                                     placeholder="Trip to Goa"
                                     value={formData.name}
                                     onChange={handleChange}
-                                    required
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className={fieldErrors.name ? 'border-red-500 focus-visible:ring-red-500' : ''}
                                 />
+                                {fieldErrors.name && (
+                                    <p className="text-red-500 text-xs mt-1">{fieldErrors.name}</p>
+                                )}
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-sm font-medium text-gray-700">
-                                    Description <span className="text-gray-400">(optional)</span>
-                                </label>
-                                <textarea
+                                <Label htmlFor="description">
+                                    Description <span className="text-gray-400 font-normal">(optional)</span>
+                                </Label>
+                                <Textarea
+                                    id="description"
                                     name="description"
                                     placeholder="What's this group for?"
                                     value={formData.description}
                                     onChange={handleChange}
                                     rows={3}
-                                    className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                                    className={`resize-none ${fieldErrors.description ? 'border-red-500 focus-visible:ring-red-500' : ''}`}
                                 />
+                                {fieldErrors.description && (
+                                    <p className="text-red-500 text-xs mt-1">{fieldErrors.description}</p>
+                                )}
                             </div>
 
                             <div className="flex gap-3 pt-2">
@@ -148,11 +180,7 @@ function Groups() {
                                     type="button"
                                     variant="outline"
                                     className="flex-1"
-                                    onClick={() => {
-                                        setShowCreateModal(false)
-                                        setFormData({ name: '', description: '' })
-                                        setServerError(null)
-                                    }}
+                                    onClick={handleCloseModal}
                                 >
                                     Cancel
                                 </Button>

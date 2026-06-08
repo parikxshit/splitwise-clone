@@ -1,7 +1,7 @@
-const { z } = require('zod')
 const { ValidationError } = require('../utils/errors');
-const { createGroupSchema, addMemberSchema } = require('./group.validator')
-const { registerSchema, loginSchema, refreshSchema } = require('./auth.validator')
+const { createGroupSchema, addMemberSchema } = require('./group.validator');
+const { registerSchema, loginSchema, refreshSchema } = require('./auth.validator');
+const { createExpenseSchema } = require('./expense.validator');
 
 const validate = (schema) => {
   return (req, res, next) => {
@@ -27,4 +27,5 @@ module.exports = {
   refreshSchema,
   createGroupSchema,
   addMemberSchema,
+  createExpenseSchema,
 }

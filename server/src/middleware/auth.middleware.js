@@ -1,7 +1,6 @@
 const { verifyAccessToken } = require('../utils/jwt');
 const { UnauthorizedError } = require('../utils/errors');
 const { ERROR_MESSAGES } = require('../constants');
-const logger = require('../utils/logger');
 
 const protect = (req, res, next) => {
 
@@ -14,8 +13,6 @@ const protect = (req, res, next) => {
     const token = authHeader.split(' ')[1];
 
     const decoded = verifyAccessToken(token);
-
-    logger.info(decoded, 'decoded')
     req.user = { userId: decoded.userId };
 
     next();

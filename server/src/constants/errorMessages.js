@@ -5,7 +5,7 @@ const ERROR_MESSAGES = {
   GENERIC_SERVER_ERROR: 'Internal Server Error',
   INVALID_CREDENTIALS: 'Invalid email or password',
   NO_TOKEN: 'Access denied, no token provided',          // ← ADD
-  INVALID_TOKEN: 'Access denied, invalid token', 
+  INVALID_TOKEN: 'Access denied, invalid token',
 };
 
 module.exports = ERROR_MESSAGES;

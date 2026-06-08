@@ -16,7 +16,17 @@ const createGroup = async ({ name, description, userId }) => {
       },
     },
     include: {
-      members: true,
+      members: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
     },
   })
 

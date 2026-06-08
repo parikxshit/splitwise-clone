@@ -1,3 +1,5 @@
+import { Expense } from './expense.types'
+
 export interface GroupMember {
     id: string
     userId: string
@@ -27,4 +29,6 @@ export interface GroupState {
     groups: Group[]
     selectedGroup: Group | null
     loading: boolean
+    expenses: Expense[]
+    expensesLoading: boolean
 }
