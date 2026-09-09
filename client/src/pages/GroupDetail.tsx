@@ -88,7 +88,7 @@ function GroupDetail() {
         }
 
         fetchExpenses()
-    }, [selectedGroup?.id, id, dispatch])
+    }, [selectedGroup, id, dispatch])
 
     // ─── Add Member ───
     const handleAddMember = async (e: React.SyntheticEvent<HTMLFormElement>) => {
