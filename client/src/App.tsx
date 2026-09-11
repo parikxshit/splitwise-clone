@@ -1,18 +1,18 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Groups from './pages/Groups';
+import Login from './pages/Login/Login';
+import Register from './pages/Register/Register';
+import Dashboard from './pages/Dashboard/Dashboard';
+import Groups from './pages/Groups/Groups';
 import GroupDetail from './pages/GroupDetail';
-import ProtectedRoute from './components/ProtectedRoute';
-import PublicRoute from './components/PublicRoute';
+import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
+import PublicRoute from './components/PublicRoute/PublicRoute';
 import { setCredentials, clearCredentials } from './store/slices/authSlice';
 import { useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from './store';
 import api from './api/axios';
-import Layout from './components/Layout';
+import Layout from './components/Layout/Layout';
 
 function App() {
 
