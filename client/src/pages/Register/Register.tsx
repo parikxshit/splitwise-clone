@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card/Card'
+import { Input } from '@/components/ui/Input/Input'
+import { Label } from '@/components/ui/Label/Label'
+import { Button } from '@/components/ui/Button/Button'
 import api from '@/api/axios'
 import { registerSchema, RegisterFormData } from '@/validations/auth.schema'
 

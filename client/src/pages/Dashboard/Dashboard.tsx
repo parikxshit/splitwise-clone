@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button/Button'
 import { setGroups, setGroupLoading } from '@/store/slices/groupSlice'
 import api from '@/api/axios'
 import type { RootState, AppDispatch } from '@/store'

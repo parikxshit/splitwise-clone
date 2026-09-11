@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate, NavLink } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/Button/Button'
 import { clearCredentials } from '@/store/slices/authSlice'
 import api from '@/api/axios'
 import type { RootState, AppDispatch } from '@/store'
