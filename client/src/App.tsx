@@ -5,7 +5,7 @@ import Login from './pages/Login/Login';
 import Register from './pages/Register/Register';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Groups from './pages/Groups/Groups';
-import GroupDetail from './pages/GroupDetail';
+import GroupDetail from './pages/GroupDetail/GroupDetail';
 import ProtectedRoute from './components/ProtectedRoute/ProtectedRoute';
 import PublicRoute from './components/PublicRoute/PublicRoute';
 import { setCredentials, clearCredentials } from './store/slices/authSlice';
