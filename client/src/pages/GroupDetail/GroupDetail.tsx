@@ -18,6 +18,7 @@ import { createExpenseSchema } from '@/validations/expense.schema'
 import api from '@/api/axios'
 import type { RootState, AppDispatch } from '@/store'
 import type { GroupMember, Expense } from '@/types'
+import { AddMemberModal } from './AddMemberModal/AddMemberModal'
 
 function GroupDetail() {
     const { id } = useParams<{ id: string }>()
@@ -35,10 +36,6 @@ function GroupDetail() {
 
     // Add Member modal state
     const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false)
-    const [email, setEmail] = useState<string>('')
-    const [emailError, setEmailError] = useState<string | null>(null)
-    const [addingMember, setAddingMember] = useState<boolean>(false)
-    const [memberServerError, setMemberServerError] = useState<string | null>(null)
 
     // Add Expense modal state
     const [showAddExpenseModal, setShowAddExpenseModal] = useState<boolean>(false)
@@ -91,43 +88,14 @@ function GroupDetail() {
     }, [selectedGroup, id, dispatch])
 
     // ─── Add Member ───
-    const handleAddMember = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        setEmailError(null)
-        setMemberServerError(null)
-
-        if (!email) {
-            setEmailError('Email is required')
-            return
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-        if (!emailRegex.test(email)) {
-            setEmailError('Please enter a valid email address')
-            return
-        }
-
-        setAddingMember(true)
-
-        try {
-            const response = await api.post(`/groups/${id}/members`, { email })
-            const updatedGroup = {
-                ...selectedGroup!,
-                members: [...selectedGroup!.members, response.data.data],
-            }
-            dispatch(setSelectedGroup(updatedGroup))
-            setShowAddMemberModal(false)
-            setEmail('')
-        } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'response' in err) {
-                const axiosError = err as { response: { data: { message: string } } }
-                setMemberServerError(axiosError.response?.data?.message || 'Something went wrong')
-            } else {
-                setMemberServerError('Something went wrong')
-            }
-        } finally {
-            setAddingMember(false)
-        }
+    const handleMemberAdded = (member: GroupMember) => {
+        if (!selectedGroup) return
+        dispatch(
+            setSelectedGroup({
+                ...selectedGroup,
+                members: [...selectedGroup.members, member],
+            }),
+        )
     }
 
     // ─── Delete Group ───
@@ -229,14 +197,6 @@ function GroupDetail() {
         } finally {
             setDeletingExpenseId(null)
         }
-    }
-
-    // ─── Helpers ───
-    const handleCloseMemberModal = () => {
-        setShowAddMemberModal(false)
-        setEmail('')
-        setEmailError(null)
-        setMemberServerError(null)
     }
 
     const formatTimeAgo = (dateStr: string) => {
@@ -455,54 +415,12 @@ function GroupDetail() {
             </div>
 
             {/* ─── Add Member Modal ─── */}
-            {showAddMemberModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-                    <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Member</h3>
-
-                        {memberServerError && (
-                            <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">
-                                {memberServerError}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleAddMember} className="space-y-4">
-                            <div className="space-y-1">
-                                <Label htmlFor="email">Email Address</Label>
-                                <Input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    placeholder="friend@example.com"
-                                    value={email}
-                                    onChange={(e) => {
-                                        setEmail(e.target.value)
-                                        setEmailError(null)
-                                    }}
-                                    className={emailError ? 'border-red-500 focus-visible:ring-red-500' : ''}
-                                />
-                                {emailError && (
-                                    <p className="text-red-500 text-xs mt-1">{emailError}</p>
-                                )}
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="flex-1"
-                                    onClick={handleCloseMemberModal}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={addingMember} className="flex-1">
-                                    {addingMember ? 'Adding...' : 'Add Member'}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <AddMemberModal
+                open={showAddMemberModal}
+                onOpenChange={setShowAddMemberModal}
+                groupId={selectedGroup.id}
+                onMemberAdded={handleMemberAdded}
+            />
 
             {/* ─── Add Expense Modal ─── */}
             {showAddExpenseModal && (
