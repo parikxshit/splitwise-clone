@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Button } from '@/components/ui/Button/Button'
-import { Input } from '@/components/ui/Input/Input'
-import { Label } from '@/components/ui/Label/Label'
 import {
     setSelectedGroup,
     clearSelectedGroup,
@@ -14,11 +12,11 @@ import {
     setExpensesLoading,
     clearExpenses,
 } from '@/store/slices/groupSlice'
-import { createExpenseSchema } from '@/validations/expense.schema'
 import api from '@/api/axios'
 import type { RootState, AppDispatch } from '@/store'
 import type { GroupMember, Expense } from '@/types'
-import { AddMemberModal } from './AddMemberModal/AddMemberModal'
+import AddMemberModal  from './AddMemberModal/AddMemberModal';
+import AddExpenseModal  from './AddExpenseModal/AddExpenseModal';
 
 function GroupDetail() {
     const { id } = useParams<{ id: string }>()
@@ -39,12 +37,6 @@ function GroupDetail() {
 
     // Add Expense modal state
     const [showAddExpenseModal, setShowAddExpenseModal] = useState<boolean>(false)
-    const [expenseDescription, setExpenseDescription] = useState<string>('')
-    const [expenseAmount, setExpenseAmount] = useState<string>('')
-    const [selectedMembers, setSelectedMembers] = useState<string[]>([])
-    const [expenseFieldErrors, setExpenseFieldErrors] = useState<Record<string, string>>({})
-    const [expenseServerError, setExpenseServerError] = useState<string | null>(null)
-    const [creatingExpense, setCreatingExpense] = useState<boolean>(false)
 
     const isCreator = selectedGroup?.createdBy === user?.id
 
@@ -114,73 +106,8 @@ function GroupDetail() {
     }
 
     // ─── Add Expense ───
-    const handleOpenExpenseModal = () => {
-        // Pre-select all members by default
-        if (selectedGroup) {
-            setSelectedMembers(selectedGroup.members.map((m) => m.userId))
-        }
-        setShowAddExpenseModal(true)
-    }
-
-    const handleCloseExpenseModal = () => {
-        setShowAddExpenseModal(false)
-        setExpenseDescription('')
-        setExpenseAmount('')
-        setSelectedMembers([])
-        setExpenseFieldErrors({})
-        setExpenseServerError(null)
-    }
-
-    const toggleMemberSelection = (userId: string) => {
-        setSelectedMembers((prev) =>
-            prev.includes(userId)
-                ? prev.filter((id) => id !== userId)
-                : [...prev, userId]
-        )
-        setExpenseFieldErrors((prev) => ({ ...prev, splitBetween: '' }))
-    }
-
-    const handleCreateExpense = async (e: React.SyntheticEvent<HTMLFormElement>) => {
-        e.preventDefault()
-        setExpenseServerError(null)
-        setExpenseFieldErrors({})
-
-        const parsedAmount = parseFloat(expenseAmount)
-
-        const result = createExpenseSchema.safeParse({
-            description: expenseDescription,
-            amount: isNaN(parsedAmount) ? undefined : parsedAmount,
-            splitBetween: selectedMembers,
-        })
-
-        if (!result.success) {
-            const errors: Record<string, string> = {}
-            result.error.errors.forEach((err) => {
-                const field = err.path[0]?.toString()
-                if (field && !errors[field]) {
-                    errors[field] = err.message
-                }
-            })
-            setExpenseFieldErrors(errors)
-            return
-        }
-
-        setCreatingExpense(true)
-
-        try {
-            const response = await api.post(`/groups/${id}/expenses`, result.data)
-            dispatch(addExpense(response.data.data))
-            handleCloseExpenseModal()
-        } catch (err: unknown) {
-            if (err && typeof err === 'object' && 'response' in err) {
-                const axiosError = err as { response: { data: { message: string } } }
-                setExpenseServerError(axiosError.response?.data?.message || 'Something went wrong')
-            } else {
-                setExpenseServerError('Something went wrong')
-            }
-        } finally {
-            setCreatingExpense(false)
-        }
+    const handleExpenseAdded = (expense: Expense) => {
+        dispatch(addExpense(expense))
     }
 
     // ─── Delete Expense ───
@@ -216,11 +143,6 @@ function GroupDetail() {
 
         return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
     }
-
-    const splitPreview =
-        selectedMembers.length > 0 && expenseAmount && !isNaN(parseFloat(expenseAmount))
-            ? (parseFloat(expenseAmount) / selectedMembers.length).toFixed(2)
-            : null
 
     // ─── Loading / Not Found ───
     if (pageLoading) {
@@ -303,7 +225,7 @@ function GroupDetail() {
                     <div className="bg-white rounded-xl border p-5">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-semibold text-gray-800">Expenses</h3>
-                            <Button size="sm" onClick={handleOpenExpenseModal}>
+                            <Button size="sm" onClick={() => setShowAddExpenseModal(true)}>
                                 + Add Expense
                             </Button>
                         </div>
@@ -423,147 +345,16 @@ function GroupDetail() {
             />
 
             {/* ─── Add Expense Modal ─── */}
-            {showAddExpenseModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-                    <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-                        <h3 className="text-lg font-semibold text-gray-800 mb-4">Add Expense</h3>
-
-                        {expenseServerError && (
-                            <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">
-                                {expenseServerError}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleCreateExpense} className="space-y-4">
-                            {/* Description */}
-                            <div className="space-y-1">
-                                <Label htmlFor="expense-description">Description</Label>
-                                <Input
-                                    id="expense-description"
-                                    placeholder="Dinner, Uber, Groceries..."
-                                    value={expenseDescription}
-                                    onChange={(e) => {
-                                        setExpenseDescription(e.target.value)
-                                        setExpenseFieldErrors((prev) => ({ ...prev, description: '' }))
-                                    }}
-                                    className={
-                                        expenseFieldErrors.description
-                                            ? 'border-red-500 focus-visible:ring-red-500'
-                                            : ''
-                                    }
-                                />
-                                {expenseFieldErrors.description && (
-                                    <p className="text-red-500 text-xs mt-1">
-                                        {expenseFieldErrors.description}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Amount */}
-                            <div className="space-y-1">
-                                <Label htmlFor="expense-amount">Amount (₹)</Label>
-                                <Input
-                                    id="expense-amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    placeholder="500.00"
-                                    value={expenseAmount}
-                                    onChange={(e) => {
-                                        setExpenseAmount(e.target.value)
-                                        setExpenseFieldErrors((prev) => ({ ...prev, amount: '' }))
-                                    }}
-                                    className={
-                                        expenseFieldErrors.amount
-                                            ? 'border-red-500 focus-visible:ring-red-500'
-                                            : ''
-                                    }
-                                />
-                                {expenseFieldErrors.amount && (
-                                    <p className="text-red-500 text-xs mt-1">
-                                        {expenseFieldErrors.amount}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Split Between */}
-                            <div className="space-y-2">
-                                <Label>Split between</Label>
-                                <div className="border rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
-                                    {selectedGroup!.members.map((member: GroupMember) => {
-                                        const isSelected = selectedMembers.includes(member.userId)
-                                        return (
-                                            <label
-                                                key={member.userId}
-                                                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                                                    isSelected
-                                                        ? 'bg-blue-50 border border-blue-200'
-                                                        : 'hover:bg-gray-50 border border-transparent'
-                                                }`}
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={isSelected}
-                                                    onChange={() => toggleMemberSelection(member.userId)}
-                                                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                                />
-                                                <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-medium flex-shrink-0">
-                                                    {member.user.name.charAt(0).toUpperCase()}
-                                                </div>
-                                                <span className="text-sm text-gray-700 truncate">
-                                                    {member.user.id === user?.id ? 'You' : member.user.name}
-                                                </span>
-                                            </label>
-                                        )
-                                    })}
-                                </div>
-                                {expenseFieldErrors.splitBetween && (
-                                    <p className="text-red-500 text-xs mt-1">
-                                        {expenseFieldErrors.splitBetween}
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* Split Preview */}
-                            {splitPreview && (
-                                <div className="bg-blue-50 rounded-lg p-3 text-center">
-                                    <p className="text-sm text-blue-700">
-                                        ₹{splitPreview} per person
-                                    </p>
-                                    <p className="text-xs text-blue-500 mt-0.5">
-                                        Split equally among {selectedMembers.length}{' '}
-                                        {selectedMembers.length === 1 ? 'person' : 'people'}
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Paying info */}
-                            <div className="bg-gray-50 rounded-lg p-3">
-                                <p className="text-xs text-gray-500">
-                                    Paid by <span className="font-medium text-gray-700">You ({user?.name})</span>
-                                </p>
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex gap-3 pt-2">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    className="flex-1"
-                                    onClick={handleCloseExpenseModal}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={creatingExpense} className="flex-1">
-                                    {creatingExpense ? 'Adding...' : 'Add Expense'}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <AddExpenseModal
+                open={showAddExpenseModal}
+                onOpenChange={setShowAddExpenseModal}
+                groupId={selectedGroup.id}
+                members={selectedGroup.members}
+                currentUser={user}
+                onExpenseAdded={handleExpenseAdded}
+            />
         </div>
     )
 }
 
-export default GroupDetail
+export default GroupDetail;

@@ -165,4 +165,4 @@ function AddMemberModal({
     )
 }
 
-export { AddMemberModal }
+export default AddMemberModal; 
