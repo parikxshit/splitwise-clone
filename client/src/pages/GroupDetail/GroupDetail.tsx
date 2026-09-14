@@ -17,6 +17,7 @@ import type { RootState, AppDispatch } from '@/store'
 import type { GroupMember, Expense } from '@/types'
 import AddMemberModal  from './AddMemberModal/AddMemberModal';
 import AddExpenseModal  from './AddExpenseModal/AddExpenseModal';
+import MembersPanel from './MembersPanel/MembersPanel'
 
 function GroupDetail() {
     const { id } = useParams<{ id: string }>()
@@ -187,37 +188,12 @@ function GroupDetail() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* ─── Members Section ─── */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white rounded-xl border p-5">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-gray-800">
-                                Members ({selectedGroup.members.length})
-                            </h3>
-                            {isCreator && (
-                                <Button size="sm" variant="outline" onClick={() => setShowAddMemberModal(true)}>
-                                    + Add
-                                </Button>
-                            )}
-                        </div>
-
-                        <div className="space-y-3">
-                            {selectedGroup.members.map((member: GroupMember) => (
-                                <div key={member.id} className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-sm font-medium flex-shrink-0">
-                                        {member.user.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-sm font-medium text-gray-800 truncate">
-                                            {member.user.name}
-                                            {member.userId === selectedGroup.createdBy && (
-                                                <span className="text-xs text-gray-400 ml-1">(creator)</span>
-                                            )}
-                                        </p>
-                                        <p className="text-xs text-gray-400 truncate">{member.user.email}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    <MembersPanel
+                        members={selectedGroup.members}
+                        creatorId={selectedGroup.createdBy}
+                        canAddMember={isCreator}
+                        onAddMember={() => setShowAddMemberModal(true)}
+                    />
                 </div>
 
                 {/* ─── Expenses Section ─── */}
