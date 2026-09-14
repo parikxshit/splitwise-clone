@@ -321,14 +321,16 @@ function GroupDetail() {
             />
 
             {/* ─── Add Expense Modal ─── */}
-            <AddExpenseModal
-                open={showAddExpenseModal}
-                onOpenChange={setShowAddExpenseModal}
-                groupId={selectedGroup.id}
-                members={selectedGroup.members}
-                currentUser={user}
-                onExpenseAdded={handleExpenseAdded}
-            />
+            {showAddExpenseModal && (
+                <AddExpenseModal
+                    open={showAddExpenseModal}
+                    onOpenChange={setShowAddExpenseModal}
+                    groupId={selectedGroup.id}
+                    members={selectedGroup.members}
+                    currentUser={user}
+                    onExpenseAdded={handleExpenseAdded}
+                />
+            )}
         </div>
     )
 }
