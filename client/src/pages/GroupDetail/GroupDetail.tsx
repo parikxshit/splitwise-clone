@@ -18,6 +18,7 @@ import type { GroupMember, Expense } from '@/types'
 import AddMemberModal  from './AddMemberModal/AddMemberModal';
 import AddExpenseModal  from './AddExpenseModal/AddExpenseModal';
 import MembersPanel from './MembersPanel/MembersPanel'
+import ExpenseItem from './ExpenseItem/ExpenseItem'
 
 function GroupDetail() {
     const { id } = useParams<{ id: string }>()
@@ -127,24 +128,6 @@ function GroupDetail() {
         }
     }
 
-    const formatTimeAgo = (dateStr: string) => {
-        const now = new Date()
-        const date = new Date(dateStr)
-        const diffMs = now.getTime() - date.getTime()
-        const diffMins = Math.floor(diffMs / 60000)
-
-        if (diffMins < 1) return 'just now'
-        if (diffMins < 60) return `${diffMins}m ago`
-
-        const diffHours = Math.floor(diffMins / 60)
-        if (diffHours < 24) return `${diffHours}h ago`
-
-        const diffDays = Math.floor(diffHours / 24)
-        if (diffDays < 7) return `${diffDays}d ago`
-
-        return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-    }
-
     // ─── Loading / Not Found ───
     if (pageLoading) {
         return (
@@ -220,90 +203,20 @@ function GroupDetail() {
                         ) : (
                             <div className="divide-y">
                                 {expenses.map((expense: Expense) => {
-                                    const canDelete =
-                                        expense.payerId === user?.id || selectedGroup.createdBy === user?.id
+                                    const canDelete = expense.payerId === user?.id || selectedGroup.createdBy === user?.id
                                     const isExpanded = expandedExpenseId === expense.id
 
                                     return (
-                                        <div key={expense.id} className="py-3">
-                                            {/* Expense row */}
-                                            <div className="flex items-center justify-between">
-                                                <div
-                                                    className="flex items-center gap-3 flex-1 cursor-pointer min-w-0"
-                                                    onClick={() =>
-                                                        setExpandedExpenseId(isExpanded ? null : expense.id)
-                                                    }
-                                                >
-                                                    {/* Payer avatar */}
-                                                    <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-sm font-medium flex-shrink-0">
-                                                        {expense.payer.name.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="text-sm text-gray-800 truncate">
-                                                            <span className="font-medium">
-                                                                {expense.payer.id === user?.id
-                                                                    ? 'You'
-                                                                    : expense.payer.name}
-                                                            </span>{' '}
-                                                            paid{' '}
-                                                            <span className="font-semibold text-gray-900">
-                                                                ₹{Number(expense.amount).toFixed(2)}
-                                                            </span>{' '}
-                                                            for{' '}
-                                                            <span className="font-medium">
-                                                                {expense.description}
-                                                            </span>
-                                                        </p>
-                                                        <p className="text-xs text-gray-400 mt-0.5">
-                                                            Split between {expense.splits.length} people •{' '}
-                                                            {formatTimeAgo(expense.createdAt)}
-                                                        </p>
-                                                    </div>
-                                                </div>
-
-                                                {/* Actions */}
-                                                <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                                                    <button
-                                                        onClick={() =>
-                                                            setExpandedExpenseId(isExpanded ? null : expense.id)
-                                                        }
-                                                        className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1"
-                                                    >
-                                                        {isExpanded ? '▲' : '▼'}
-                                                    </button>
-                                                    {canDelete && (
-                                                        <button
-                                                            onClick={() => handleDeleteExpense(expense.id)}
-                                                            disabled={deletingExpenseId === expense.id}
-                                                            className="text-xs text-red-400 hover:text-red-600 px-2 py-1 disabled:opacity-50"
-                                                        >
-                                                            {deletingExpenseId === expense.id ? '...' : '✕'}
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* Expanded split details */}
-                                            {isExpanded && (
-                                                <div className="mt-3 ml-12 bg-gray-50 rounded-lg p-3 space-y-2">
-                                                    {expense.splits.map((split) => (
-                                                        <div
-                                                            key={split.id}
-                                                            className="flex items-center justify-between text-sm"
-                                                        >
-                                                            <span className="text-gray-600">
-                                                                {split.user.id === user?.id
-                                                                    ? 'You'
-                                                                    : split.user.name}
-                                                            </span>
-                                                            <span className="text-gray-800 font-medium">
-                                                                ₹{Number(split.amount).toFixed(2)}
-                                                            </span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                        </div>
+                                        <ExpenseItem 
+                                            key={expense.id}
+                                            expense={expense}
+                                            currentUserId={user?.id}
+                                            canDelete={canDelete}
+                                            isExpanded={isExpanded}
+                                            isDeleting={deletingExpenseId === expense.id}
+                                            onToggle={() => setExpandedExpenseId(isExpanded ? null : expense.id)}
+                                            onDelete={() => handleDeleteExpense(expense.id)}
+                                        />
                                     )
                                 })}
                             </div>
