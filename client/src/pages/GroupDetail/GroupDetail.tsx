@@ -18,7 +18,7 @@ import type { GroupMember, Expense } from '@/types'
 import AddMemberModal  from './AddMemberModal/AddMemberModal';
 import AddExpenseModal  from './AddExpenseModal/AddExpenseModal';
 import MembersPanel from './MembersPanel/MembersPanel'
-import ExpenseItem from './ExpenseItem/ExpenseItem'
+import ExpenseList from './ExpenseList/ExpenseList'
 
 function GroupDetail() {
     const { id } = useParams<{ id: string }>()
@@ -32,7 +32,6 @@ function GroupDetail() {
     const [pageLoading, setPageLoading] = useState<boolean>(true)
     const [deleting, setDeleting] = useState<boolean>(false)
     const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null)
-    const [expandedExpenseId, setExpandedExpenseId] = useState<string | null>(null)
 
     // Add Member modal state
     const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false)
@@ -181,47 +180,15 @@ function GroupDetail() {
 
                 {/* ─── Expenses Section ─── */}
                 <div className="lg:col-span-2">
-                    <div className="bg-white rounded-xl border p-5">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-gray-800">Expenses</h3>
-                            <Button size="sm" onClick={() => setShowAddExpenseModal(true)}>
-                                + Add Expense
-                            </Button>
-                        </div>
-
-                        {expensesLoading ? (
-                            <div className="flex justify-center py-12">
-                                <p className="text-gray-400 text-sm">Loading expenses...</p>
-                            </div>
-                        ) : expenses.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <p className="text-gray-400 text-sm">No expenses yet</p>
-                                <p className="text-gray-400 text-xs mt-1">
-                                    Add an expense to start splitting costs
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="divide-y">
-                                {expenses.map((expense: Expense) => {
-                                    const canDelete = expense.payerId === user?.id || selectedGroup.createdBy === user?.id
-                                    const isExpanded = expandedExpenseId === expense.id
-
-                                    return (
-                                        <ExpenseItem 
-                                            key={expense.id}
-                                            expense={expense}
-                                            currentUserId={user?.id}
-                                            canDelete={canDelete}
-                                            isExpanded={isExpanded}
-                                            isDeleting={deletingExpenseId === expense.id}
-                                            onToggle={() => setExpandedExpenseId(isExpanded ? null : expense.id)}
-                                            onDelete={() => handleDeleteExpense(expense.id)}
-                                        />
-                                    )
-                                })}
-                            </div>
-                        )}
-                    </div>
+                    <ExpenseList 
+                        expenses={expenses}
+                        isLoading={expensesLoading}
+                        currentUserId={user?.id}
+                        groupCreatorId={selectedGroup.createdBy}
+                        deletingExpenseId={deletingExpenseId}
+                        onAddExpense={() => setShowAddExpenseModal(true)}
+                        onDeleteExpense={handleDeleteExpense}
+                    />
                 </div>
             </div>
 
