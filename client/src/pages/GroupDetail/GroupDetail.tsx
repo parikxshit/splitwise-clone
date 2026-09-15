@@ -80,7 +80,7 @@ function GroupDetail() {
         fetchExpenses()
     }, [selectedGroup, id, dispatch])
 
-    // ─── Add Member ───
+    // ─── After member is added ───
     const handleMemberAdded = (member: GroupMember) => {
         if (!selectedGroup) return
         dispatch(
@@ -106,7 +106,7 @@ function GroupDetail() {
         }
     }
 
-    // ─── Add Expense ───
+    // ─── After Expense is Added ───
     const handleExpenseAdded = (expense: Expense) => {
         dispatch(addExpense(expense))
     }
@@ -143,25 +143,15 @@ function GroupDetail() {
             {/* Header */}
             <div className="flex items-start justify-between mb-6">
                 <div>
-                    <button
-                        onClick={() => navigate('/groups')}
-                        className="text-sm text-gray-400 hover:text-gray-600 mb-2 flex items-center gap-1"
-                    >
+                    <button onClick={() => navigate('/groups')} className="text-sm text-gray-400 hover:text-gray-600 mb-2 flex items-center gap-1">
                         ← Back to Groups
                     </button>
                     <h2 className="text-2xl font-bold text-gray-800">{selectedGroup.name}</h2>
-                    {selectedGroup.description && (
-                        <p className="text-gray-500 text-sm mt-1">{selectedGroup.description}</p>
-                    )}
+                    {selectedGroup.description && (<p className="text-gray-500 text-sm mt-1">{selectedGroup.description}</p>)}
                 </div>
-
+                
                 {isCreator && (
-                    <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={handleDeleteGroup}
-                        disabled={deleting}
-                    >
+                    <Button variant="destructive" size="sm" onClick={handleDeleteGroup} disabled={deleting}>
                         {deleting ? 'Deleting...' : 'Delete Group'}
                     </Button>
                 )}
