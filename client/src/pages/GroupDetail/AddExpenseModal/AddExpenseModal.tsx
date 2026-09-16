@@ -121,11 +121,7 @@ function AddExpenseModal({
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1">
                     <Label htmlFor="expense-description">Description</Label>
-                    <Input
-                        id="expense-description"
-                        name="description"
-                        placeholder="Dinner, Uber, Groceries..."
-                        value={description}
+                    <Input id="expense-description" name="description" placeholder="Dinner, Uber, Groceries..." value={description}
                         onChange={(event) => {
                             setDescription(event.target.value)
                             setFieldErrors((currentErrors) => ({
@@ -141,14 +137,7 @@ function AddExpenseModal({
 
                 <div className="space-y-1">
                     <Label htmlFor="expense-amount">Amount (₹)</Label>
-                    <Input
-                        id="expense-amount"
-                        name="amount"
-                        type="number"
-                        step="0.01"
-                        min="0.01"
-                        placeholder="500.00"
-                        value={amount}
+                    <Input id="expense-amount" name="amount" type="number" step="0.01" min="0.01" placeholder="500.00" value={amount}
                         onChange={(event) => {
                             setAmount(event.target.value)
                             setFieldErrors((currentErrors) => ({
