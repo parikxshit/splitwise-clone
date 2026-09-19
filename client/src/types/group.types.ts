@@ -29,6 +29,7 @@ export interface GroupState {
     groups: Group[]
     selectedGroup: Group | null
     loading: boolean
+    groupsError: string | null
     expenses: Expense[]
     expensesLoading: boolean
 }

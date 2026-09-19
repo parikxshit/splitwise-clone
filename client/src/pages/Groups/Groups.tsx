@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button/Button'
 import { Input } from '@/components/ui/Input/Input'
 import { Textarea } from '@/components/ui/Textarea/Textarea'
 import { Label } from '@/components/ui/Label/Label'
-import { setGroups, setGroupLoading, addGroup } from '@/store/slices/groupSlice'
+import { setGroups, setGroupLoading, addGroup, setGroupsError } from '@/store/slices/groupSlice'
 import { createGroupSchema, CreateGroupFormData } from '@/validations/group.schema'
 import api from '@/api/axios'
 import type { RootState, AppDispatch } from '@/store'
@@ -14,27 +14,29 @@ import type { Group } from '@/types'
 function Groups() {
     const dispatch = useDispatch<AppDispatch>()
     const navigate = useNavigate()
-    const { groups, loading } = useSelector((state: RootState) => state.group)
+    const { groups, loading, groupsError } = useSelector((state: RootState) => state.group)
 
-    const [showCreateModal, setShowCreateModal] = useState<boolean>(false)
-    const [formData, setFormData] = useState<CreateGroupFormData>({ name: '', description: '' })
-    const [fieldErrors, setFieldErrors] = useState<Partial<CreateGroupFormData>>({})
-    const [creating, setCreating] = useState<boolean>(false)
-    const [serverError, setServerError] = useState<string | null>(null)
+    const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
+    const [formData, setFormData] = useState<CreateGroupFormData>({ name: '', description: '' });
+    const [fieldErrors, setFieldErrors] = useState<Partial<CreateGroupFormData>>({});
+    const [creating, setCreating] = useState<boolean>(false);
+    const [serverError, setServerError] = useState<string | null>(null);
+
+    const fetchGroups = useCallback(async () => {
+        dispatch(setGroupLoading(true))
+        try {
+            const response = await api.get('/groups')
+            dispatch(setGroups(response.data.data))
+        } catch {
+            dispatch(setGroupsError('Unable to load groups. Please check your connection and try again.'))
+        }
+        dispatch(setGroupLoading(false))
+    }, [dispatch])
 
     useEffect(() => {
-        const fetchGroups = async () => {
-            dispatch(setGroupLoading(true))
-            try {
-                const response = await api.get('/groups')
-                dispatch(setGroups(response.data.data))
-            } catch {
-                dispatch(setGroupLoading(false))
-            }
-        }
-
         fetchGroups()
-    }, [dispatch])
+    }, [fetchGroups])
+
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -98,15 +100,29 @@ function Groups() {
                 <div className="flex justify-center py-12">
                     <p className="text-gray-400 text-sm">Loading groups...</p>
                 </div>
-            ) : groups.length === 0 ? (
-                <div className="bg-white rounded-xl border p-12 text-center">
-                    <p className="text-gray-400 text-sm">No groups yet</p>
-                    <p className="text-gray-400 text-xs mt-1">Create a group to start splitting expenses</p>
-                    <Button className="mt-4" onClick={() => setShowCreateModal(true)}>
-                        + Create your first group
-                    </Button>
-                </div>
-            ) : (
+            ) : groupsError ? (
+                    <div className="rounded-xl border bg-white p-12 text-center">
+                        <p className="text-sm text-red-600">
+                            {groupsError}
+                        </p>
+
+                        <Button
+                            className="mt-4"
+                            variant="outline"
+                            onClick={fetchGroups}
+                        >
+                            Retry
+                        </Button>
+                    </div>
+                ) : groups.length === 0 ? (
+                    <div className="bg-white rounded-xl border p-12 text-center">
+                        <p className="text-gray-400 text-sm">No groups yet</p>
+                        <p className="text-gray-400 text-xs mt-1">Create a group to start splitting expenses</p>
+                        <Button className="mt-4" onClick={() => setShowCreateModal(true)}>
+                            + Create your first group
+                        </Button>
+                    </div>
+                ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {groups.map((group: Group) => (
                         <div

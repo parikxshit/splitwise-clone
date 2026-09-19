@@ -6,6 +6,7 @@ const initialState: GroupState = {
     groups: [],
     selectedGroup: null,
     loading: false,
+    groupsError: null,
     expenses: [],
     expensesLoading: false,
 }
@@ -16,6 +17,7 @@ const groupSlice = createSlice({
     reducers: {
         setGroups: (state, action: PayloadAction<Group[]>) => {
             state.groups = action.payload
+            state.groupsError = null
             state.loading = false
         },
         setSelectedGroup: (state, action: PayloadAction<Group>) => {
@@ -30,6 +32,12 @@ const groupSlice = createSlice({
         },
         setGroupLoading: (state, action: PayloadAction<boolean>) => {
             state.loading = action.payload
+            if (action.payload) {
+                state.groupsError = null
+            }
+        },
+        setGroupsError: (state, action: PayloadAction<string>) => {
+            state.groupsError = action.payload
         },
         clearSelectedGroup: (state) => {
             state.selectedGroup = null
@@ -62,6 +70,7 @@ export const {
     addGroup,
     removeGroup,
     setGroupLoading,
+    setGroupsError,
     clearSelectedGroup,
     setExpenses,
     addExpense,
