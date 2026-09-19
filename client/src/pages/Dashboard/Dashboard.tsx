@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button/Button'
-import { setGroups, setGroupLoading } from '@/store/slices/groupSlice'
+import { setGroups, setGroupLoading, setGroupsError } from '@/store/slices/groupSlice'
 import api from '@/api/axios'
 import type { RootState, AppDispatch } from '@/store'
 import type { Group } from '@/types'
@@ -10,23 +10,25 @@ import type { Group } from '@/types'
 function Dashboard() {
     const navigate = useNavigate()
     const dispatch = useDispatch<AppDispatch>()
-    const { groups } = useSelector((state: RootState) => state.group)
+    const { groups, loading, groupsError } = useSelector((state: RootState) => state.group)
     const { user } = useSelector((state: RootState) => state.auth)
+
+    const fetchGroups = useCallback(async () => {
+        dispatch(setGroupLoading(true))
+        try {
+            const response = await api.get('/groups')
+            dispatch(setGroups(response.data.data))
+        } catch {
+            dispatch(setGroupsError('Unable to load groups. Please check your connection and try again.'))
+        }
+        dispatch(setGroupLoading(false))
+    }, [dispatch])
 
     useEffect(() => {
         if (groups.length === 0) {
-            const fetchGroups = async () => {
-                dispatch(setGroupLoading(true))
-                try {
-                    const response = await api.get('/groups')
-                    dispatch(setGroups(response.data.data))
-                } catch {
-                    dispatch(setGroupLoading(false))
-                }
-            }
             fetchGroups()
         }
-    }, [dispatch, groups.length])
+    }, [fetchGroups, groups.length])
 
     return (
         <div>
@@ -65,13 +67,36 @@ function Dashboard() {
                     </Button>
                 </div>
 
-                {groups.length === 0 ? (
+                {loading ? (
+                    <div className="flex justify-center py-12">
+                        <p className="text-sm text-gray-400">
+                            Loading groups...
+                        </p>
+                    </div>
+                ) : groupsError ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <p className="text-sm text-red-600">
+                            {groupsError}
+                        </p>
+
+                        <Button
+                            className="mt-4"
+                            variant="outline"
+                            onClick={fetchGroups}
+                        >
+                            Retry
+                        </Button>
+                    </div>
+                ) : groups.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 text-center">
                         <p className="text-gray-400 text-sm">No groups yet</p>
                         <p className="text-gray-400 text-xs mt-1">
                             Create a group to start splitting expenses
                         </p>
-                        <Button className="mt-4" onClick={() => navigate('/groups')}>
+                        <Button
+                            className="mt-4"
+                            onClick={() => navigate('/groups')}
+                        >
                             + Create a group
                         </Button>
                     </div>
@@ -84,10 +109,16 @@ function Dashboard() {
                                 className="flex items-center justify-between py-3 cursor-pointer hover:bg-gray-50 px-2 rounded-lg transition-colors"
                             >
                                 <div>
-                                    <p className="text-sm font-medium text-gray-800">{group.name}</p>
-                                    <p className="text-xs text-gray-400">{group.members.length} members</p>
+                                    <p className="text-sm font-medium text-gray-800">
+                                        {group.name}
+                                    </p>
+                                    <p className="text-xs text-gray-400">
+                                        {group.members.length} members
+                                    </p>
                                 </div>
-                                <p className="text-xs text-gray-400">{group._count?.expenses ?? 0} expenses</p>
+                                <p className="text-xs text-gray-400">
+                                    {group._count?.expenses ?? 0} expenses
+                                </p>
                             </div>
                         ))}
                     </div>
