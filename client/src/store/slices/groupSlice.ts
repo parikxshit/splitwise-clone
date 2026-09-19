@@ -5,7 +5,7 @@ import { Group, GroupState, Expense } from '@/types'
 const initialState: GroupState = {
     groups: [],
     selectedGroup: null,
-    loading: false,
+    groupsStatus: 'idle',
     groupsError: null,
     expenses: [],
     expensesLoading: false,
@@ -18,25 +18,25 @@ const groupSlice = createSlice({
         setGroups: (state, action: PayloadAction<Group[]>) => {
             state.groups = action.payload
             state.groupsError = null
-            state.loading = false
+            state.groupsStatus = 'succeeded'
         },
         setSelectedGroup: (state, action: PayloadAction<Group>) => {
             state.selectedGroup = action.payload
-            state.loading = false
         },
         addGroup: (state, action: PayloadAction<Group>) => {
             state.groups.unshift(action.payload)
+            state.groupsStatus = 'succeeded'
+            state.groupsError = null
         },
         removeGroup: (state, action: PayloadAction<string>) => {
             state.groups = state.groups.filter((g) => g.id !== action.payload)
         },
-        setGroupLoading: (state, action: PayloadAction<boolean>) => {
-            state.loading = action.payload
-            if (action.payload) {
-                state.groupsError = null
-            }
+        startGroupsLoading: (state) => {
+            state.groupsStatus = 'loading'
+            state.groupsError = null
         },
         setGroupsError: (state, action: PayloadAction<string>) => {
+            state.groupsStatus = 'failed'
             state.groupsError = action.payload
         },
         clearSelectedGroup: (state) => {
@@ -69,7 +69,7 @@ export const {
     setSelectedGroup,
     addGroup,
     removeGroup,
-    setGroupLoading,
+    startGroupsLoading,
     setGroupsError,
     clearSelectedGroup,
     setExpenses,

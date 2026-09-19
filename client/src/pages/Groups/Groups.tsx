@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button/Button'
 import { Input } from '@/components/ui/Input/Input'
 import { Textarea } from '@/components/ui/Textarea/Textarea'
 import { Label } from '@/components/ui/Label/Label'
-import { setGroups, setGroupLoading, addGroup, setGroupsError } from '@/store/slices/groupSlice'
+import { setGroups, startGroupsLoading, addGroup, setGroupsError } from '@/store/slices/groupSlice'
 import { createGroupSchema, CreateGroupFormData } from '@/validations/group.schema'
 import api from '@/api/axios'
 import type { RootState, AppDispatch } from '@/store'
@@ -14,7 +14,7 @@ import type { Group } from '@/types'
 function Groups() {
     const dispatch = useDispatch<AppDispatch>()
     const navigate = useNavigate()
-    const { groups, loading, groupsError } = useSelector((state: RootState) => state.group)
+    const { groups, groupsStatus, groupsError } = useSelector((state: RootState) => state.group)
 
     const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
     const [formData, setFormData] = useState<CreateGroupFormData>({ name: '', description: '' });
@@ -23,19 +23,20 @@ function Groups() {
     const [serverError, setServerError] = useState<string | null>(null);
 
     const fetchGroups = useCallback(async () => {
-        dispatch(setGroupLoading(true))
+        dispatch(startGroupsLoading())
         try {
             const response = await api.get('/groups')
             dispatch(setGroups(response.data.data))
         } catch {
             dispatch(setGroupsError('Unable to load groups. Please check your connection and try again.'))
         }
-        dispatch(setGroupLoading(false))
     }, [dispatch])
 
     useEffect(() => {
-        fetchGroups()
-    }, [fetchGroups])
+        if (groupsStatus === 'idle') {
+            fetchGroups()
+        }
+    }, [fetchGroups, groupsStatus])
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -96,7 +97,7 @@ function Groups() {
             </div>
 
             {/* Groups List */}
-            {loading ? (
+            {groupsStatus === 'loading' ? (
                 <div className="flex justify-center py-12">
                     <p className="text-gray-400 text-sm">Loading groups...</p>
                 </div>

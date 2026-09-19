@@ -2,7 +2,7 @@ import { useEffect, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button/Button'
-import { setGroups, setGroupLoading, setGroupsError } from '@/store/slices/groupSlice'
+import { setGroups, startGroupsLoading, setGroupsError } from '@/store/slices/groupSlice'
 import api from '@/api/axios'
 import type { RootState, AppDispatch } from '@/store'
 import type { Group } from '@/types'
@@ -10,25 +10,24 @@ import type { Group } from '@/types'
 function Dashboard() {
     const navigate = useNavigate()
     const dispatch = useDispatch<AppDispatch>()
-    const { groups, loading, groupsError } = useSelector((state: RootState) => state.group)
+    const { groups, groupsStatus, groupsError } = useSelector((state: RootState) => state.group)
     const { user } = useSelector((state: RootState) => state.auth)
 
     const fetchGroups = useCallback(async () => {
-        dispatch(setGroupLoading(true))
+        dispatch(startGroupsLoading())
         try {
             const response = await api.get('/groups')
             dispatch(setGroups(response.data.data))
         } catch {
             dispatch(setGroupsError('Unable to load groups. Please check your connection and try again.'))
         }
-        dispatch(setGroupLoading(false))
     }, [dispatch])
 
     useEffect(() => {
-        if (groups.length === 0) {
+        if (groupsStatus === 'idle') {
             fetchGroups()
         }
-    }, [fetchGroups, groups.length])
+    }, [fetchGroups, groupsStatus])
 
     return (
         <div>
@@ -67,7 +66,7 @@ function Dashboard() {
                     </Button>
                 </div>
 
-                {loading ? (
+                {groupsStatus === 'loading' ? (
                     <div className="flex justify-center py-12">
                         <p className="text-sm text-gray-400">
                             Loading groups...

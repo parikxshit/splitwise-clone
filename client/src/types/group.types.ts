@@ -28,8 +28,14 @@ export interface Group {
 export interface GroupState {
     groups: Group[]
     selectedGroup: Group | null
-    loading: boolean
+    groupsStatus: GroupsStatus
     groupsError: string | null
     expenses: Expense[]
     expensesLoading: boolean
 }
+
+export type GroupsStatus =
+    | 'idle'
+    | 'loading'
+    | 'succeeded'
+    | 'failed'
