@@ -68,24 +68,17 @@ function GroupDetail() {
     // ─── Fetch expenses once group is loaded ───
     const fetchExpenses = useCallback(async () => {
         if (!id) return
-
         dispatch(startExpensesLoading())
-
         try {
             const response = await api.get(`/groups/${id}/expenses`)
-            dispatch(setExpenses(response.data.expenses))
+            dispatch(setExpenses(response.data.data))
         } catch {
-            dispatch(
-            setExpensesError(
-                'Unable to load expenses. Please check your connection and try again.',
-            ),
-            )
+            dispatch(setExpensesError('Unable to load expenses. Please check your connection and try again.'))
         }
         }, [dispatch, id])
 
     useEffect(() => {
         if (!selectedGroup) return
-
         fetchExpenses()
     }, [fetchExpenses, selectedGroup])
 
