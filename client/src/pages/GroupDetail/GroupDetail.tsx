@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { Button } from '@/components/ui/Button/Button'
@@ -9,7 +9,8 @@ import {
     setExpenses,
     addExpense,
     removeExpense,
-    setExpensesLoading,
+    startExpensesLoading,
+    setExpensesError,
     clearExpenses,
 } from '@/store/slices/groupSlice'
 import api from '@/api/axios'
@@ -25,7 +26,7 @@ function GroupDetail() {
     const navigate = useNavigate()
     const dispatch = useDispatch<AppDispatch>()
 
-    const { selectedGroup, expenses, expensesLoading } = useSelector((state: RootState) => state.group)
+    const { selectedGroup, expenses, expensesLoading, expensesError } = useSelector((state: RootState) => state.group)
     const { user } = useSelector((state: RootState) => state.auth)
 
     // Page state
@@ -65,21 +66,28 @@ function GroupDetail() {
     }, [id, dispatch, navigate])
 
     // ─── Fetch expenses once group is loaded ───
+    const fetchExpenses = useCallback(async () => {
+        if (!id) return
+
+        dispatch(startExpensesLoading())
+
+        try {
+            const response = await api.get(`/groups/${id}/expenses`)
+            dispatch(setExpenses(response.data.expenses))
+        } catch {
+            dispatch(
+            setExpensesError(
+                'Unable to load expenses. Please check your connection and try again.',
+            ),
+            )
+        }
+        }, [dispatch, id])
+
     useEffect(() => {
         if (!selectedGroup) return
 
-        const fetchExpenses = async () => {
-            dispatch(setExpensesLoading(true))
-            try {
-                const response = await api.get(`/groups/${id}/expenses`)
-                dispatch(setExpenses(response.data.data))
-            } catch {
-                dispatch(setExpensesLoading(false))
-            }
-        }
-
         fetchExpenses()
-    }, [selectedGroup, id, dispatch])
+    }, [fetchExpenses, selectedGroup])
 
     // ─── After member is added ───
     const handleMemberAdded = (member: GroupMember) => {
@@ -197,6 +205,8 @@ function GroupDetail() {
                         deletingExpenseId={deletingExpenseId}
                         onAddExpense={() => setShowAddExpenseModal(true)}
                         onDeleteExpense={handleDeleteExpense}
+                        expensesError={expensesError}
+                        onRetry={fetchExpenses}
                     />
                 </div>
             </div>

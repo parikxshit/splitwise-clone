@@ -32,6 +32,7 @@ export interface GroupState {
     groupsError: string | null
     expenses: Expense[]
     expensesLoading: boolean
+    expensesError: string | null
 }
 
 export type GroupsStatus =

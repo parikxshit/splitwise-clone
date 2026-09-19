@@ -9,6 +9,7 @@ const initialState: GroupState = {
     groupsError: null,
     expenses: [],
     expensesLoading: false,
+    expensesError: null,
 }
 
 const groupSlice = createSlice({
@@ -45,6 +46,7 @@ const groupSlice = createSlice({
         setExpenses: (state, action: PayloadAction<Expense[]>) => {
             state.expenses = action.payload
             state.expensesLoading = false
+            state.expensesError = null
         },
         addExpense: (state, action: PayloadAction<Expense>) => {
             state.expenses.unshift(action.payload)
@@ -52,11 +54,18 @@ const groupSlice = createSlice({
         removeExpense: (state, action: PayloadAction<string>) => {
             state.expenses = state.expenses.filter((e) => e.id !== action.payload)
         },
-        setExpensesLoading: (state, action: PayloadAction<boolean>) => {
-            state.expensesLoading = action.payload
+        startExpensesLoading: (state) => {
+            state.expensesLoading = true
+            state.expensesError = null
+        },
+        setExpensesError: (state, action: PayloadAction<string>) => {
+            state.expensesLoading = false
+            state.expensesError = action.payload
         },
         clearExpenses: (state) => {
-            state.expenses = []
+            state.expenses = [];
+            state.expensesLoading = false
+            state.expensesError = null
         },
     },
     extraReducers: (builder) => {
@@ -75,7 +84,8 @@ export const {
     setExpenses,
     addExpense,
     removeExpense,
-    setExpensesLoading,
+    startExpensesLoading,
+    setExpensesError,
     clearExpenses,
 } = groupSlice.actions
 

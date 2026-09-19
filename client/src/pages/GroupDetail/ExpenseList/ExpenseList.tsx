@@ -12,6 +12,8 @@ interface ExpenseListProps {
     deletingExpenseId: string | null
     onAddExpense: () => void
     onDeleteExpense: (expenseId: string) => void
+    expensesError?: string | null
+    onRetry?: () => void
 }
 
 function ExpenseList({
@@ -22,6 +24,8 @@ function ExpenseList({
     deletingExpenseId,
     onAddExpense,
     onDeleteExpense,
+    expensesError,
+    onRetry,
 }: ExpenseListProps) {
     const [expandedExpenseId, setExpandedExpenseId] =
         useState<string | null>(null)
@@ -29,32 +33,38 @@ function ExpenseList({
     return (
         <div className="rounded-xl border bg-white p-5">
             <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-semibold text-gray-800">
-                    Expenses
-                </h3>
-
-                <Button size="sm" onClick={onAddExpense}>
-                    + Add Expense
-                </Button>
+                <h3 className="font-semibold text-gray-800">Expenses</h3>
+                <Button size="sm" onClick={onAddExpense}>+ Add Expense</Button>
             </div>
-
             {isLoading ? (
                 <div className="flex justify-center py-12">
                     <p className="text-sm text-gray-400">
                         Loading expenses...
                     </p>
                 </div>
-            ) : expenses.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                    <p className="text-sm text-gray-400">
-                        No expenses yet
-                    </p>
+            ) : expensesError ? (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+                        <p className="text-sm text-red-700">{expensesError}</p>
+                        <Button
+                        type="button"
+                        variant="outline"
+                        className="mt-4"
+                        onClick={onRetry}
+                        >
+                        Retry
+                        </Button>
+                    </div>
+                ) : expenses.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                        <p className="text-sm text-gray-400">
+                            No expenses yet
+                        </p>
 
-                    <p className="mt-1 text-xs text-gray-400">
-                        Add an expense to start splitting costs
-                    </p>
-                </div>
-            ) : (
+                        <p className="mt-1 text-xs text-gray-400">
+                            Add an expense to start splitting costs
+                        </p>
+                    </div>
+                ) : (
                 <div className="divide-y">
                     {expenses.map((expense) => {
                         const canDelete = expense.payerId === currentUserId || groupCreatorId === currentUserId
