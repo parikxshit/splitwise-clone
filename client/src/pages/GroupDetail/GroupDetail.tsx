@@ -31,7 +31,8 @@ function GroupDetail() {
     // Page state
     const [pageLoading, setPageLoading] = useState<boolean>(true)
     const [deleting, setDeleting] = useState<boolean>(false)
-    const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null)
+    const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
+    const [actionError, setActionError] = useState<string | null>(null);
 
     // Add Member modal state
     const [showAddMemberModal, setShowAddMemberModal] = useState<boolean>(false)
@@ -94,17 +95,17 @@ function GroupDetail() {
     // ─── Delete Group ───
     const handleDeleteGroup = async () => {
         if (!confirm('Are you sure you want to delete this group? This cannot be undone.')) return
-
+        setActionError(null)
         setDeleting(true)
-
         try {
             await api.delete(`/groups/${id}`)
             dispatch(removeGroup(id!))
             navigate('/groups')
         } catch {
+            setActionError('Unable to delete this group. Please try again.');
             setDeleting(false)
         }
-    }
+    };
 
     // ─── After Expense is Added ───
     const handleExpenseAdded = (expense: Expense) => {
@@ -113,15 +114,14 @@ function GroupDetail() {
 
     // ─── Delete Expense ───
     const handleDeleteExpense = async (expenseId: string) => {
-        if (!confirm('Delete this expense?')) return
-
+        if (!confirm('Delete this expense?')) return;
+        setActionError(null)
         setDeletingExpenseId(expenseId)
-
         try {
             await api.delete(`/expenses/${expenseId}`)
             dispatch(removeExpense(expenseId))
         } catch {
-            // silently fail
+            setActionError('Unable to delete this expense. Please try again.')
         } finally {
             setDeletingExpenseId(null)
         }
@@ -149,13 +149,32 @@ function GroupDetail() {
                     <h2 className="text-2xl font-bold text-gray-800">{selectedGroup.name}</h2>
                     {selectedGroup.description && (<p className="text-gray-500 text-sm mt-1">{selectedGroup.description}</p>)}
                 </div>
-                
+
                 {isCreator && (
                     <Button variant="destructive" size="sm" onClick={handleDeleteGroup} disabled={deleting}>
                         {deleting ? 'Deleting...' : 'Delete Group'}
                     </Button>
                 )}
             </div>
+
+            {actionError && (
+                <div
+                    role="alert"
+                    className="mb-6 flex items-center justify-between gap-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+                >
+                    <p>{actionError}</p>
+
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-700 hover:bg-red-100"
+                        onClick={() => setActionError(null)}
+                    >
+                        Dismiss
+                    </Button>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* ─── Members Section ─── */}
