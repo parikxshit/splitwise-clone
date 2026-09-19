@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { clearCredentials } from './authSlice'
 import { Group, GroupState, Expense } from '@/types'
 
 const initialState: GroupState = {
@@ -49,6 +50,9 @@ const groupSlice = createSlice({
         clearExpenses: (state) => {
             state.expenses = []
         },
+    },
+    extraReducers: (builder) => {
+        builder.addCase(clearCredentials, () => initialState)
     },
 })
 
