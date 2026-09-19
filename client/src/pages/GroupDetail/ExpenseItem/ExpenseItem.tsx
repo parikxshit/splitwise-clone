@@ -62,9 +62,16 @@ function ExpenseItem({
     return (
         <div className="py-3">
             <div className="flex items-center justify-between">
-                <div
-                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-3"
+                <button
+                    type="button"
                     onClick={onToggle}
+                    aria-expanded={isExpanded}
+                    aria-label={
+                        isExpanded
+                        ? `Hide split details for ${expense.description}`
+                        : `Show split details for ${expense.description}`
+                    }
+                    className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
                 >
                     <div
                         aria-hidden="true"
@@ -98,7 +105,7 @@ function ExpenseItem({
                             {formatTimeAgo(expense.createdAt)}
                         </p>
                     </div>
-                </div>
+                </button>
 
                 <div className="ml-3 flex shrink-0 items-center gap-2">
                     <button
