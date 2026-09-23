@@ -30,7 +30,8 @@ function GroupDetail() {
     const { user } = useSelector((state: RootState) => state.auth)
 
     // Page state
-    const [pageLoading, setPageLoading] = useState<boolean>(true)
+    const [pageLoading, setPageLoading] = useState<boolean>(true);
+    const [pageError, setPageError] = useState<string | null>(null);
     const [deleting, setDeleting] = useState<boolean>(false)
     const [deletingExpenseId, setDeletingExpenseId] = useState<string | null>(null);
     const [actionError, setActionError] = useState<string | null>(null);
@@ -44,26 +45,62 @@ function GroupDetail() {
     const isCreator = selectedGroup?.createdBy === user?.id
 
     // ─── Fetch group details ───
+    // const fetchGroup = useCallback(async () => {
+    //     if (!id) return
+    //     try {
+    //         const response = await api.get(`/groups/${id}`)
+    //         dispatch(setSelectedGroup(response.data.data))
+    //     } catch {
+    //         setPageError('Unable to load this group. Please check your connection and try again.')
+    //     } finally {
+    //         setPageLoading(false)
+    //     }
+    // }, [dispatch, id]);
+
+    const handleRetryGroup = () => {
+        setPageLoading(true)
+        setPageError(null)
+
+        api
+        .get(`/groups/${id}`)
+        .then((response) => {
+            dispatch(setSelectedGroup(response.data.data))
+        })
+        .catch(() => {
+            setPageError('Unable to load this group. Please check your connection and try again.')
+        })
+        .finally(() => {
+            setPageLoading(false)
+        })
+    }
+
     useEffect(() => {
-        const fetchGroup = async () => {
-            setPageLoading(true)
-            try {
-                const response = await api.get(`/groups/${id}`)
+        let isCurrent = true
+        api
+        .get(`/groups/${id}`)
+        .then((response) => {
+            if (isCurrent) {
                 dispatch(setSelectedGroup(response.data.data))
-            } catch {
-                navigate('/groups')
-            } finally {
+            }
+        })
+        .catch(() => {
+            console.error('Error fetching group details')
+            if (isCurrent) {
+                setPageError('Unable to load this group. Please check your connection and try again.',)
+            }
+        })
+        .finally(() => {
+            if (isCurrent) {
                 setPageLoading(false)
             }
-        }
-
-        fetchGroup()
+        })
 
         return () => {
+            isCurrent = false
             dispatch(clearSelectedGroup())
             dispatch(clearExpenses())
         }
-    }, [id, dispatch, navigate])
+    }, [dispatch, id])
 
     // ─── Fetch expenses once group is loaded ───
     const fetchExpenses = useCallback(async () => {
@@ -137,7 +174,21 @@ function GroupDetail() {
         )
     }
 
-    if (!selectedGroup) return null
+    if (pageError) {
+        console.error('Error loading group:', pageError)
+        return (
+            <div className="rounded-lg border border-red-200 bg-red-50 p-6 text-center">
+                <p className="text-sm text-red-700">{pageError}</p>
+                <div className="mt-4 flex justify-center gap-3">
+                    <Button type="button" variant="outline" onClick={() => navigate('/groups')}>Back to Groups</Button>
+                    <Button type="button" onClick={handleRetryGroup}>Retry</Button>
+                </div>
+            </div>
+        )
+    }
+
+    if (!selectedGroup) return null;
+
 
     return (
         <div>
