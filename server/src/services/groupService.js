@@ -84,11 +84,6 @@ const getGroupById = async ({ groupId, userId }) => {
           },
         },
       },
-      expenses: {
-        orderBy: {
-          createdAt: 'desc',
-        },
-      },
     },
   })
 
