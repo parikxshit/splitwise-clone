@@ -21,7 +21,10 @@ const createExpense = async ({ groupId, description, amount, splitBetween, payer
   if (invalidUsers.length > 0) throw new BadRequestError('Some users in splitBetween are not members of this group')
 
   // calculate equal split
-  const splitAmount = Number((amount / splitBetween.length).toFixed(2))
+  // Calculate in paise so every split adds up exactly to the expense amount.
+  const totalPaise = Math.round(amount * 100)
+  const baseSplitPaise = Math.floor(totalPaise / splitBetween.length)
+  const remainderPaise = totalPaise % splitBetween.length
 
   // create expense and splits in one transaction
   const expense = await prisma.$transaction(async (tx) => {
@@ -32,10 +35,10 @@ const createExpense = async ({ groupId, description, amount, splitBetween, payer
         groupId,
         payerId,
         splits: {
-          create: splitBetween.map((userId) => ({
-            userId,
-            amount: splitAmount,
-          })),
+          create: splitBetween.map((userId, index) => {
+            const splitPaise = baseSplitPaise + (index < remainderPaise ? 1 : 0)
+            return { userId, amount: (splitPaise / 100).toFixed(2) }
+          }),
         },
       },
       include: {
@@ -51,7 +54,7 @@ const createExpense = async ({ groupId, description, amount, splitBetween, payer
         },
       },
     })
-
+    
     return newExpense
   })
 
