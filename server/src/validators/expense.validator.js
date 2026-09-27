@@ -7,8 +7,8 @@ const createExpenseSchema = z.object({
   amount: z.number()
     .positive('Amount must be greater than 0')
     .multipleOf(0.01, 'Amount can have at most 2 decimal places'),
-  splitBetween: z.array(z.string().uuid('Invalid user ID'))
-    .min(1, 'At least one user is required to split with'),
+  splitBetween: z.array(z.string().uuid('Invalid user ID')).min(1, 'At least one user is required to split with')
+    .refine((userIds) => new Set(userIds).size === userIds.length, 'Each user can appear only once in a split'),
 })
 
 module.exports = { createExpenseSchema }
